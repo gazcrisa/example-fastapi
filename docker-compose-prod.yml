@@ -1,0 +1,32 @@
+version: '3'
+services:
+  api:
+    image: gazcrisa/fastapi
+    depends_on:
+      - postgres2
+    ports:
+        - 8000:8000
+    volumes:
+      - ./:/usr/src/app:ro
+    # command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+
+  postgres2:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=fastapi
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    
+volumes:
+  postgres-db:
+  
