@@ -32,7 +32,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), curren
     db.refresh(new_post)
     return new_post
 
-@router.put("/{id}", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
+@router.put("/{id}", status_code=status.HTTP_200_OK, response_model=schemas.Post)
 def update_posts(id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
     # cursor.execute("""UPDATE post SET title = %s, content = %s, published = %s WHERE id = %s RETURNING * """, (post.title, post.content, post.published, (str(id),)))
     # updated_post = cursor.fetchone()
@@ -55,10 +55,10 @@ def update_posts(id: int, updated_post: schemas.PostCreate, db: Session = Depend
 
 
 @router.get("/{id}")
-def get_post(id: int, db: Session = Depends(get_db), response_model=schemas.PostOut):
+def get_post(id: int, db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user), response_model=schemas.PostOut):
     # cursor.execute("""SELECT * FROM post WHERE id = %s """, (str(id),))
     # post = cursor.fetchone()
-    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).first()
+    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} was not found")
     return post
